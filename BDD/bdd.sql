@@ -2,6 +2,8 @@ DROP DATABASE IF EXISTS Janitor;
 
 CREATE DATABASE Janitor;
 
+USE Janitor;
+
 CREATE TABLE Janitor.User (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL,
@@ -20,19 +22,19 @@ CREATE TABLE Janitor.Property(
     price DECIMAL(10, 2) NOT NULL,
     description TEXT NOT NULL,
     image VARCHAR(255) NOT NULL,
-    Owner INT NOT NULL,
-    FOREIGN KEY (Owner) REFERENCES Janitor.User(id)
+    OwnerId INT NOT NULL,
+    FOREIGN KEY (OwnerId) REFERENCES Janitor.User(id)
 );
 
-CREATE TABLE Janitor.PropertyReview(
+CREATE TABLE Janitor.Property_Review(
     id INT PRIMARY KEY AUTO_INCREMENT,
     rating INT NOT NULL,
     review TEXT NOT NULL,
-    Property INT NOT NULL,
-    FOREIGN KEY (Property) REFERENCES Janitor.Property(id)
+    PropertyId INT NOT NULL,
+    FOREIGN KEY (PropertyId) REFERENCES Janitor.Property(id)
 );
 
-CREATE TABLE Janitor.Services(
+CREATE TABLE Janitor.Service(
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
