@@ -3,6 +3,7 @@ import { AppDataSource } from '../../database/database';
 import { PropertyReview } from '../../database/entities/PropertyReview';
 import { CreatePropertyReviewValidator, ListPropertyReviewValidator, PropertyReviewIdValidation } from '../validators/PropertyReview-validator';
 import { generateValidationErrorMessage } from '../validators/GenerateValidationMessage-validator';
+import { PropertyReviewUseCase } from '../../domain/PropertyReview-usecase';
 
 export const PropertyReviewHandler = (app: express.Express) => {
 
@@ -29,18 +30,24 @@ export const PropertyReviewHandler = (app: express.Express) => {
     app.get('/property-review', async (req: Request, res: Response) => {
         const validation = ListPropertyReviewValidator.validate(req.query);
 
-        if (validation.error) {
+        if(validation.error){
             res.status(400).send(generateValidationErrorMessage(validation.error.details));
             return;
         }
-        const PropertyReviewRequest = validation.value;
+        const listPropertyReviewRequest = validation.value;
+        let limit = 20;
+        if(listPropertyReviewRequest.limit){
+            limit = listPropertyReviewRequest.limit;
+        }
+        const page = listPropertyReviewRequest.page ?? 1;
 
-        const PropertyReviewRepo = AppDataSource.getRepository(PropertyReview);
-
-        try {
-            const PropertyReviewList = await PropertyReviewRepo.findOneBy(PropertyReviewRequest);
-            res.status(200).send(PropertyReviewList);
-        } catch (error) {
+        try{
+            const propertyReviewUseCase = new PropertyReviewUseCase(AppDataSource);
+            const PropertyList = await propertyReviewUseCase.listPropertyReviews(listPropertyReviewRequest);
+            res.status(200).send(PropertyList);
+        }
+        
+        catch (error) {
             console.log(error);
             res.status(500).send({ error: "Internal error" });
         }
@@ -53,12 +60,14 @@ export const PropertyReviewHandler = (app: express.Express) => {
             res.status(400).send(generateValidationErrorMessage(validation.error.details));
             return;
         }
-        const PropertyReviewRequest = validation.value;
+        const PropertyReviewId = validation.value;
 
-        const PropertyReviewRepo = AppDataSource.getRepository(PropertyReview);
+        const propertyReviewUseCase = new PropertyReviewUseCase(AppDataSource);
+
+        const propertyReview = await propertyReviewUseCase.getPropertyReviewById(PropertyReviewId.id);
 
         try {
-            const PropertyReview = await PropertyReviewRepo.findOne(PropertyReviewRequest);
+            const PropertyReview = await propertyReviewUseCase.getPropertyReviewById(PropertyReviewId.id);
             if (!PropertyReview) {
                 res.status(404).send({ error: "PropertyReview not found" });
                 return;
@@ -82,27 +91,19 @@ export const PropertyReviewHandler = (app: express.Express) => {
         const PropertyReviewRepo = AppDataSource.getRepository(PropertyReview);
 
         try {
-            const PropertyReview = await PropertyReviewRepo.findOne(PropertyReviewRequest);
-            if (!PropertyReview) {
+            const propertyReviewUseCase = new PropertyReviewUseCase(AppDataSource);
+            const validationResult = PropertyReviewIdValidation.validate(req.params);
+            if (validationResult.error) {
+                res.status(400).send(generateValidationErrorMessage(validationResult.error.details));
+                return;
+            }
+            const updatePropertyReview = await propertyReviewUseCase.updatePropertyReview(PropertyReviewRequest.id, req.body);
+
+            if (updatePropertyReview == null) {
                 res.status(404).send({ error: "PropertyReview not found" });
                 return;
             }
-
-            const updateValidation = CreatePropertyReviewValidator.validate(req.body);
-
-            if (updateValidation.error) {
-                res.status(400).send(generateValidationErrorMessage(updateValidation.error.details));
-                return;
-            }
-
-            const updateRequest = updateValidation.value;
-
-            PropertyReview.rating = updateRequest.rating;
-            PropertyReview.review = updateRequest.review;
-            PropertyReview.PropertyId = updateRequest.PropertyId;
-
-            const updatedPropertyReview = await PropertyReviewRepo.save(PropertyReview);
-            res.status(200).send(updatedPropertyReview);
+            res.status(200).send(updatePropertyReview);
         } catch (error) {
             console.log(error);
             res.status(500).send({ error: "Internal error" });
@@ -110,26 +111,28 @@ export const PropertyReviewHandler = (app: express.Express) => {
     });
 
     app.delete('/property-review/:id', async (req: Request, res: Response) => {
-        const validation = PropertyReviewIdValidation.validate(req.params);
-
-        if (validation.error) {
-            res.status(400).send(generateValidationErrorMessage(validation.error.details));
-            return;
-        }
-        const PropertyReviewRequest = validation.value;
-
-        const PropertyReviewRepo = AppDataSource.getRepository(PropertyReview);
-
         try {
-            const PropertyReview = await PropertyReviewRepo.findOne(PropertyReviewRequest);
-            if (!PropertyReview) {
+            const validationResult = PropertyReviewIdValidation.validate(req.params);
+
+            if (validationResult.error) {
+                res.status(400).send(generateValidationErrorMessage(validationResult.error.details));
+                return;
+            }
+            const PropertyReviewId = validationResult.value;
+
+            const PropertyReviewRepo = AppDataSource.getRepository(PropertyReview);
+
+            const propertyReview = await PropertyReviewRepo.findOneBy({ id: PropertyReviewId.id });
+
+            if (!propertyReview) {
                 res.status(404).send({ error: "PropertyReview not found" });
                 return;
             }
 
-            await PropertyReviewRepo.remove(PropertyReview);
-            res.status(204).send();
-        } catch (error) {
+            await PropertyReviewRepo.remove(propertyReview);
+            res.status(200).send({ message : "PropertyReview deleted" });
+        } 
+        catch (error) {
             console.log(error);
             res.status(500).send({ error: "Internal error" });
         }
