@@ -2,6 +2,7 @@ import express, { Response } from "express";
 import { PropertyHandler } from "./Property";
 import { ServiceHandler } from "./Service";
 import { PropertyReviewHandler } from "./PropertyReview";
+import { UserHandler } from "./User/User";
 
 
 export const initRoutes = (app: express.Express) => {
@@ -14,4 +15,5 @@ export const initRoutes = (app: express.Express) => {
     PropertyHandler(app)
     ServiceHandler(app)
     PropertyReviewHandler(app)
+    UserHandler(app)
 }

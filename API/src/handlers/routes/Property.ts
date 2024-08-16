@@ -3,7 +3,7 @@ import { AppDataSource } from '../../database/database';
 import { Property } from '../../database/entities/Property';
 import { CreatePropertyValidator, ListPropertyValidator, PropertyIdValidation } from '../validators/Property-validator';
 import { generateValidationErrorMessage } from '../validators/GenerateValidationMessage-validator';
-import { PropertyUseCase } from '../../domain/Property-uescase';
+import { PropertyUseCase } from '../../domain/Property-usecase';
 
 
 export const PropertyHandler = (app: express.Express) => {

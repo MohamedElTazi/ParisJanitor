@@ -1,13 +1,23 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Token } from './Token';
 
+export enum UserRole {
+    Invité = "Invité",
+    Membre = "Membre",
+    Administrateur = "Administrateur",
+    Owner = "Owner"
+}
+
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    username: string;
+    name: string;
+
+    @Column()
+    firstname: string;
 
     @Column()
     password: string;
@@ -15,15 +25,19 @@ export class User {
     @Column()
     email: string;
 
-    @Column()
+    @Column({
+        type: "enum",
+        enum: UserRole,
+    })
     role: string;
 
     @OneToMany(() => Token, token => token.user)
     tokens: Token[];
 
-    constructor(id: number, username: string, email: string, password: string, role: string, tokens: Token[]) {
+    constructor(id: number, name: string, firstname: string, email: string, password: string, role: string, tokens: Token[]) {
         this.id = id;
-        this.username = username;
+        this.name = name;
+        this.firstname = firstname;
         this.email = email;
         this.password = password;
         this.role = role;

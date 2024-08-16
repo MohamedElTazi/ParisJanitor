@@ -42,7 +42,7 @@ export const authMiddlewareAll = async (req: Request, res: Response, next: NextF
 
 
 
-export const authMiddlewareAdminstrateur = async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddlewareAdministrateur = async (req: Request, res: Response, next: NextFunction) => {
     
     
     const authHeader = req.headers['authorization'];
