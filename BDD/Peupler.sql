@@ -1,10 +1,12 @@
 USE Janitor;
 
-INSERT INTO Janitor.User (username, password, email, role) VALUES 
-('john_doe', 'password123', 'john@example.com', 'owner'),
-('jane_smith', 'password456', 'jane@example.com', 'owner'),
-('admin', 'adminpassword', 'admin@example.com', 'admin'),
-('mary_jones', 'password789', 'mary@example.com', 'member');
+INSERT INTO Janitor.User (name, firstname, password, email, role) VALUES 
+('john', 'doe', 'password123', 'john@example.com', 'Owner'),
+('jane', 'smith', 'password456', 'jane@example.com', 'Owner'),
+('admin', '', 'adminpassword', 'admin@example.com', 'Administrateur'),
+('mary', 'jones', 'password789', 'mary@example.com', 'Membre'),
+('guest', '','guestpassword', 'guest@example.com', 'Invité');
+
 
 INSERT INTO Janitor.Property (name, address, city, state, price, description, image, OwnerId) VALUES 
 ('Sunny Villa', '123 Sun St', 'Los Angeles', 'CA', 350000.00, 'A beautiful sunny villa with a pool.', 'sunnyvilla.jpg', 1),

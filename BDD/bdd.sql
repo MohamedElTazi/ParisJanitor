@@ -6,11 +6,12 @@ USE Janitor;
 
 CREATE TABLE Janitor.User (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    firstname VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    role VARCHAR(255) NOT NULL,
-    abonnement INT NOT NULL
+    role Enum('Administrateur', 'Membre', 'Invité', 'Owner') NOT NULL,
+    abonnement INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE Janitor.Property(
