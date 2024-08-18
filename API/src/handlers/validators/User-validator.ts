@@ -19,12 +19,10 @@ export interface CreateUserRequest {
 
 export const userIdValidation = Joi.object<UserIdRequest>({
     id: Joi.number().required(),
-    token: Joi.string().required()
 });
 
 export interface UserIdRequest {
-    id: number
-    token: string
+    id: number;
 }
 
 export const UpdateUserValidator = Joi.object({
@@ -63,10 +61,10 @@ export interface ListUserRequest {
 
 export const LoginUserValidation = Joi.object<LoginUserValidationRequest>({
     email: Joi.string().email().required(),
-    motDePasse: Joi.string().required(),
+    password: Joi.string().required(),
 }).options({ abortEarly: false });
 
 export interface LoginUserValidationRequest {
     email: string
-    motDePasse: string
+    password: string
 }

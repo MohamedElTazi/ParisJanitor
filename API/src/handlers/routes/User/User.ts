@@ -86,22 +86,28 @@ export const UserHandler = (app: express.Express) => {
 
     app.get("/users/:id", async (req: Request, res: Response) => {
         try {
-            const validationResult = userIdValidation.validate({ ...req.params, ...req.body });
+            const token = req.headers.authorization?.split(' ')[1];
+    
+            if (!token) {
+                res.status(400).send({ error: "Token is required" });
+                return;
+            }
 
-
+            const validationResult = userIdValidation.validate({ id: req.params.id });
+    
             if (validationResult.error) {
                 res.status(400).send(generateValidationErrorMessage(validationResult.error.details));
                 return;
             }
-
+    
             const userUsecase = new UserUseCase(AppDataSource);
-            
-            if(await userUsecase.verifUser(+req.params.id, req.body.token) === false){
+    
+            if (await userUsecase.verifUser(+req.params.id, token) === false) {
                 res.status(400).send({ "error": `Bad user` });
                 return;
-            } 
+            }
+    
             const userId = validationResult.value;
-
             const user = await userUsecase.getOneUser(userId.id);
             if (user === null) {
                 res.status(404).send({ "error": `User ${userId.id} not found` });
@@ -116,41 +122,31 @@ export const UserHandler = (app: express.Express) => {
 
     app.patch("/users/:id", async (req: Request, res: Response) => {
         try {
-            const validationResult = UpdateUserValidator.validate({ ...req.params, ...req.body });
-
+            // Validation des données de mise à jour
+            const validationResult = UpdateUserValidator.validate(req.body);
             if (validationResult.error) {
-                res.status(400).send(generateValidationErrorMessage(validationResult.error.details));
-                return;
+                return res.status(400).send(generateValidationErrorMessage(validationResult.error.details));
             }
     
-            const userUsecase = new UserUseCase(AppDataSource);
-
-            if(await userUsecase.verifUser(+req.params.id, req.body.token) === false){
-                res.status(400).send({ "error": `Bad user` });
-                return;
-            } 
+            const userId = +req.params.id;
             const updateUserRequest = validationResult.value;
-
-            const updatedUser = await userUsecase.updateUser(
-                updateUserRequest.id,
-                { ...updateUserRequest }
-            );
-
-
-            if (updatedUser === null) {
-                res.status(404).send({ "error": `User ${updateUserRequest.id} not found` });
-                return;
+    
+            const userUsecase = new UserUseCase(AppDataSource);
+    
+            // Récupération de l'utilisateur à partir de la base de données
+            const user = await userUsecase.getOneUser(userId);
+            if (!user) {
+                return res.status(404).send({ error: `User ${userId} not found` });
             }
-
-            if (typeof updatedUser === "string" && updatedUser === "No update provided") {
-                res.status(400).send({ "error": `No update provided` });
-                return;
-            }
-
+    
+            // Mise à jour des informations de l'utilisateur
+            const updatedUser = await userUsecase.updateUser(userId, updateUserRequest);
+            
             res.status(200).send(updatedUser);
         } catch (error) {
             console.log(error);
-            res.status(500).send({ error: "Internal error" });
+            res.status(500).send({ error: "Internal server error" });
         }
     });
+    
 }

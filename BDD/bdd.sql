@@ -61,3 +61,9 @@ CREATE TABLE Janitor.Abonnement(
     FOREIGN KEY (User) REFERENCES Janitor.User(id),
     FOREIGN KEY (Service) REFERENCES Janitor.Services(id)
 );
+
+CREATE TABLE Janitor.token (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    userId INT REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

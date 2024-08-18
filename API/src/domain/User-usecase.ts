@@ -1,6 +1,7 @@
 import { DataSource, DeleteResult} from "typeorm";
 import { User } from "../database/entities/User";
 import { Token } from "../database/entities/Token";
+import { compare, hash } from "bcrypt";
 
 export interface ListUserRequest {
     name?: string;
@@ -29,7 +30,7 @@ export class UserUseCase {
         if (!user) {
             throw new Error("User not found");
         }
-
+    
         if (params.name) {
             user.name = params.name;
         }
@@ -37,7 +38,11 @@ export class UserUseCase {
             user.firstname = params.firstname;
         }
         if (params.password) {
-            user.password = params.password;
+            // Ne hachez le mot de passe que s'il est différent de l'actuel (et donc non haché)
+            const isPasswordDifferent = await compare(params.password, user.password);
+            if (!isPasswordDifferent) {
+                user.password = await hash(params.password, 10);
+            }
         }
         if (params.email) {
             user.email = params.email;
@@ -45,10 +50,11 @@ export class UserUseCase {
         if (params.role) {
             user.role = params.role;
         }
-
+    
         const updatedUser = await repo.save(user);
         return updatedUser;
     }
+    
 
     async listUsers(params: ListUserRequest): Promise<User[]> {
         const query = this.dataSource.createQueryBuilder(User, "user");
@@ -72,7 +78,7 @@ export class UserUseCase {
 
     async verifUser(id: number, token: string): Promise<boolean> { 
         const user = await this.getOneUser(id);
-        if (!user) {
+        if (!user || !user.tokens) {
             return false;
         }
     
@@ -91,9 +97,11 @@ export class UserUseCase {
     
     async getOneUser(id: number): Promise<User | null> {
         const query = this.dataSource.createQueryBuilder(User, 'user')
+            .leftJoinAndSelect('user.tokens', 'token')  // Charger les tokens liés à l'utilisateur
             .where("user.id = :id", { id: id });
+    
         const user = await query.getOne();
-
+    
         if (!user) {
             console.log({ error: `User ${id} not found` });
             return null;
