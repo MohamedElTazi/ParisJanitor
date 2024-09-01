@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { initRoutes } from "./handlers/routes/routes";
 import { AppDataSource } from "./database/database";
 import 'dotenv/config';
@@ -19,6 +20,10 @@ const main = async () => {
     }
 
     app.use(express.json())
+    app.use(cors({
+        credentials: true,
+        origin: 'http://localhost:5173'
+    }))
 
 
     initRoutes(app)
